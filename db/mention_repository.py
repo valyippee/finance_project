@@ -1,13 +1,13 @@
 import psycopg2
 import psycopg2.extras
-import config
+import db.config as config
 
 CONNECTION = psycopg2.connect(database=config.DB_NAME,
                               user=config.DB_USER,
-                              password=config.DB_NAME)
+                              password=config.DB_PASSWORD)
 
 
-class DB:
+class MentionRepository:
     """
     In charge of interactions with the database
     """
