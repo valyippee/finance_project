@@ -1,7 +1,9 @@
 import praw
 import config
 import requests
-from db.mention_repository import DB
+from db.mention_repository import MentionRepository
+from db.stock_repository import StockRepository
+from base_db import Stock
 
 
 class RedditScraper:
@@ -32,11 +34,11 @@ class StockScraper:
     Scrape stock and stock name to populate the stocks table in the database.
 
     === Private Attributes ===
-    _database: a DB instance
+    _stock_repository: a StockRepository instance
 
     """
     def __init__(self):
-        self._database = DB()
+        self._stock_repository = StockRepository()
 
     def scrape(self) -> None:
         """
@@ -60,7 +62,8 @@ class StockScraper:
                     exchange = "BATS"
                 else:
                     exchange = "IEXG"
-                self._database.input_stock(stock_info[0], stock_info[1], exchange)
+                new_stock = Stock(symbol=stock_info[0], name=stock_info[1], exchange=exchange)
+                self._stock_repository.input_stock(new_stock)
 
 
 if __name__ == "__main__":
