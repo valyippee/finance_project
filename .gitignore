@@ -1,5 +1,6 @@
 /db/config.py
 /app/config.py
+/test_db/config.py
 
 /venv
 

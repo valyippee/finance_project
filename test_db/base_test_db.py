@@ -6,7 +6,7 @@ Contains the module/ application level attributes of sqlalchemy which all reposi
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.ext.declarative import declarative_base
-import db.config as config
+import test_db.config as config
 
 engine = create_engine(config.db_string)
 

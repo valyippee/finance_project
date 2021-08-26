@@ -1,16 +1,5 @@
-from base_db import engine
+from base_db import engine, Stock
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, String, Integer
-from base_db import Base
-
-
-class Stock(Base):
-    __tablename__ = 'stock'
-
-    id = Column(Integer, primary_key=True)
-    symbol = Column(String)
-    name = Column(String)
-    exchange = Column(String)
 
 
 class StockRepository:
@@ -18,10 +7,11 @@ class StockRepository:
     Manages interaction with the stock table in the database.
     """
 
-    def __init__(self):
-        Session = sessionmaker(engine)
-        engine.connect()
-        self.session = Session()
+    def __init__(self, init_engine=engine):
+        """
+        Initializes the StockRepository with a default engine imported from base_db.
+        """
+        self.Session = sessionmaker(init_engine)
 
     def input_stock(self, new_stock: Stock):
         """
@@ -29,12 +19,6 @@ class StockRepository:
 
         Precondition: this stock belongs to a company, not an etf
         """
-        self.session.add(new_stock)
-        self.session.commit()
-
-
-if __name__ == "__main__":
-    stock_repository = StockRepository()
-    sample_stock = Stock(symbol="123", name="sample", exchange="NYSE")
-    stock_repository.input_stock(sample_stock)
-
+        with self.Session() as session:
+            session.add(new_stock)
+            session.commit()
