@@ -2,7 +2,8 @@ CREATE TABLE stock (
     id SERIAL PRIMARY KEY,
     symbol TEXT NOT NULL,
     name TEXT NOT NULL,
-    exchange TEXT NOT NULL
+    exchange TEXT NOT NULL,
+    name_variations TEXT[] NOT NULL
 );
 
 CREATE TABLE stock_price (

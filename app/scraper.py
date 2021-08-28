@@ -6,6 +6,9 @@ from db.stock_repository import StockRepository
 from base_db import Stock
 
 
+LEGAL_ELEMENTS = ["Ltd.", "Corp.", "Corp", "Corporation", "Inc.", "Incorporated"]
+
+
 class RedditScraper:
     """
     Uses praw to scrape data from reddit. Calls DB interface to store
@@ -62,8 +65,26 @@ class StockScraper:
                     exchange = "BATS"
                 else:
                     exchange = "IEXG"
-                new_stock = Stock(symbol=stock_info[0], name=stock_info[1], exchange=exchange)
-                self._stock_repository.input_stock(new_stock)
+
+                # filter out name_variations of the stock
+                name_variations = [stock_info[0], stock_info[1]]
+                shortform_name = ""
+                for element in LEGAL_ELEMENTS:
+                    if element in stock_info[1]:
+                        name_parts = stock_info[1].split(element)
+                        shortform_name = name_parts[0].strip()
+                        if shortform_name[-1] == ",":
+                            shortform_name = shortform_name[0:len(shortform_name) - 1]
+                        break
+                if shortform_name != "":
+                    name_variations.append(shortform_name)
+
+                new_stock = Stock(symbol=stock_info[0],
+                                  name=stock_info[1],
+                                  exchange=exchange,
+                                  name_variations=name_variations)
+                print(new_stock.name_variations)
+                # self._stock_repository.input_stock(new_stock)
 
 
 if __name__ == "__main__":

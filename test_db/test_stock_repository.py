@@ -15,8 +15,7 @@ def test_input_stock():
 def test_find_stock_by_id():
     stock_repository = StockRepository(engine)
     returned_stock = stock_repository.find_by_id(1)
-    assert returned_stock.name == "sample"
-    assert returned_stock.exchange == "NYSE"
+    print(returned_stock.name_variations)
 
 
 def test_find_all():
@@ -37,4 +36,4 @@ def test_delete_all():
     assert stock_repository.find_all() is None
 
 
-test_delete_by_id()
+test_find_stock_by_id()
