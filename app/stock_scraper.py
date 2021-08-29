@@ -1,9 +1,7 @@
 from typing import List
 
-import praw
-import config
+
 import requests
-from db.mention_repository import MentionRepository
 from db.stock_repository import StockRepository
 from base_db import Stock
 
@@ -12,29 +10,6 @@ LEGAL_ELEMENTS = ["Ltd.", "Corp.", "Corp", "Corporation", "Inc.", "Inc", "Incorp
 TO_DELETE = ["Services", "Capital", "Holdings", "Holding", "Investment Trust",
              "Realty Trust", "Property Trust", "Properties Trust"]
 TO_DELETE2 = ["Hotels & Resorts", "Systems", "Properties", "Technologies", "Group"]
-
-
-class RedditScraper:
-    """
-    Uses praw to scrape data from reddit. Calls DB interface to store
-    data into the database.
-
-    === Public attributes ===
-    reddit: an authorized reddit instance which is used to retrieve data
-            from reddit
-    """
-
-    def __init__(self):
-        self.r = praw.Reddit(
-            client_id=config.client_id,
-            client_secret=config.client_secret,
-            password=config.password,
-            user_agent=config.user_agent,
-            username=config.username
-        )
-
-    def scrape(self):
-        pass
 
 
 class StockScraper:
