@@ -18,7 +18,7 @@ class CommentRepository:
         """
         pass
 
-    def input_submission(self, new_comment: Comment):
+    def input_comment(self, new_comment: Comment):
         """
         Insert new_submission into the database.
         """

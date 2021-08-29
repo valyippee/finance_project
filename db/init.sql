@@ -22,7 +22,7 @@ CREATE TABLE submission (
     submission_id TEXT PRIMARY KEY NOT NULL,
     dt TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     selftext TEXT,
-    title TEXT NOT NULL,
+    title TEXT NOT NULL
 );
 
 CREATE TABLE comment (
@@ -38,7 +38,7 @@ CREATE TABLE mention (
     mention_id SERIAL PRIMARY KEY,
     stock_id INTEGER,
     dt TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    comment_id TEXT NOT NULL,
+    comment_or_submission_id TEXT NOT NULL,
     CONSTRAINT fk_mention_stock FOREIGN KEY (stock_id) REFERENCES stock (id),
     CONSTRAINT fk_mention_comment FOREIGN KEY (comment_id) REFERENCES comment (comment_id)
 );
