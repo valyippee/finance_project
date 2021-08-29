@@ -19,28 +19,26 @@ CREATE TABLE stock_price (
 );
 
 CREATE TABLE submission (
-    submission_id INTEGER PRIMARY KEY NOT NULL,
+    submission_id TEXT PRIMARY KEY NOT NULL,
     dt TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     selftext TEXT,
     title TEXT NOT NULL,
-    stock_id INTEGER,
-    CONSTRAINT fk_submission_stock FOREIGN KEY (stock_id) REFERENCES stock (id)
 );
 
 CREATE TABLE comment (
-    comment_id INTEGER PRIMARY KEY NOT NULL,
+    comment_id TEXT PRIMARY KEY NOT NULL,
     dt TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     body TEXT NOT NULL,
     score INTEGER NOT NULL,
-    stock_id_body INTEGER,
-    submission_id INTEGER,
-    CONSTRAINT fk_comment_body_stock FOREIGN KEY (stock_id_body) REFERENCES stock (id),
+    submission_id TEXT NOT NULL,
     CONSTRAINT fk_comment_submission_stock FOREIGN KEY (submission_id) REFERENCES submission (submission_id)
 );
 
 CREATE TABLE mention (
+    mention_id SERIAL PRIMARY KEY,
     stock_id INTEGER,
     dt TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    PRIMARY KEY (stock_id, dt),
-    CONSTRAINT fk_mention_stock FOREIGN KEY (stock_id) REFERENCES stock (id)
+    comment_id TEXT NOT NULL,
+    CONSTRAINT fk_mention_stock FOREIGN KEY (stock_id) REFERENCES stock (id),
+    CONSTRAINT fk_mention_comment FOREIGN KEY (comment_id) REFERENCES comment (comment_id)
 );
