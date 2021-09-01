@@ -2,6 +2,8 @@
 /app/config.py
 /test_db/config.py
 
+/logs/output.log
+
 /venv
 
 .idea

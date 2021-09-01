@@ -1,0 +1,36 @@
+version: 1
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: brief
+    stream: ext://sys.stdout
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: precise
+    maxBytes: 1024
+    backupCount: 3
+formatters:
+  brief:
+    format: '%(message)s'
+  precise:
+    format: '%(asctime)s %(levelname)-5s %(name)-12s %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+loggers:
+  stock_scraper:
+    handlers: [console, file]
+    level: INFO
+  stock_repository:
+    handlers: [console, file]
+    level: INFO
+  stock_price_repository:
+    handlers: [ console, file ]
+    level: INFO
+  comment_repository:
+    handlers: [ console, file ]
+    level: INFO
+  submission_repository:
+    handlers: [ console, file ]
+    level: INFO
+  mention_repository:
+    handlers: [ console, file ]
+    level: INFO

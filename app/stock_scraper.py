@@ -1,6 +1,6 @@
 from typing import List
 
-
+import logging
 import requests
 from db.stock_repository import StockRepository
 from base_db import Stock
@@ -10,6 +10,8 @@ LEGAL_ELEMENTS = ["Ltd.", "Corp.", "Corp", "Corporation", "Inc.", "Inc", "Incorp
 TO_DELETE = ["Services", "Capital", "Holdings", "Holding", "Investment Trust",
              "Realty Trust", "Property Trust", "Properties Trust"]
 TO_DELETE2 = ["Hotels & Resorts", "Systems", "Properties", "Technologies", "Group"]
+
+logger = logging.getLogger(__name__)
 
 
 class StockScraper:
@@ -27,14 +29,19 @@ class StockScraper:
         """
         Gets stock data from online and populate the stock table in the database by calling a DB function.
         """
-        response = requests.get("http://ftp.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt")
+        try:
+            response = requests.get("http://ftp.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt")
+        except requests.HTTPError as err:
+            logger.exception(f"Request was not successful. Response code was: {err.response.status_code}")
+            raise
 
+        logger.info("Request was successful.")
         stocks = response.text.splitlines()
         for i in range(1, len(stocks)):
             stock_info = [info.strip() for info in stocks[i].split("|")]
 
-            # only populate the stock table if it is not an etf
-            if stock_info[4] == "N":
+            # only populate the stock table if it has not been added previously and it is not an etf
+            if self._stock_repository.find_by_ticker(stock_info[0]) is not None and stock_info[4] == "N":
                 if stock_info[2] == "A":
                     exchange = "NYSE MKT"
                 elif stock_info[2] == "N":
@@ -54,7 +61,11 @@ class StockScraper:
                                   name=stock_info[1],
                                   exchange=exchange,
                                   name_variations=name_variations)
-                self._stock_repository.input_stock(new_stock)
+                try:
+                    self._stock_repository.input_stock(new_stock)
+                except Exception:
+                    logger.exception(f"Stock table is not updated successfully. "
+                                     f"Stock: {stock_info[0]} is not added to database.")
 
     def _form_name_variations(self, company_name: str) -> List:
         """

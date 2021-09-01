@@ -25,6 +25,16 @@ def test_find_all():
         print(stock.id)
 
 
+def test_find_by_ticker():
+    stock_repository = StockRepository()
+    result = stock_repository.find_by_ticker("AA")
+    print(str(result))
+    print(type(result))
+
+    result2 = stock_repository.find_by_ticker("123")
+    assert result2 is None
+
+
 def test_delete_by_id():
     stock_repository = StockRepository(engine)
     stock_repository.delete_by_id(2)
@@ -36,4 +46,4 @@ def test_delete_all():
     assert stock_repository.find_all() is None
 
 
-test_find_stock_by_id()
+test_find_by_ticker()

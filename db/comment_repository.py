@@ -2,6 +2,9 @@ from typing import Optional
 
 from base_db import engine, Comment
 from sqlalchemy.orm import sessionmaker
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CommentRepository:

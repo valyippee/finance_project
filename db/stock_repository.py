@@ -2,6 +2,9 @@ from typing import List, Optional
 
 from base_db import engine, Stock
 from sqlalchemy.orm import sessionmaker
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class StockRepository:
@@ -22,25 +25,35 @@ class StockRepository:
         Precondition: this stock belongs to a company, not an etf.
         """
         with self.Session() as session:
-            session.add(new_stock)
-            session.commit()
+            try:
+                session.add(new_stock)
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
 
     def find_by_id(self, stock_id: int) -> Optional[Stock]:
         """
         Returns a Stock based on id, or None if the stock does not exist.
         """
-        session = self.Session()
-        result = session.query(Stock).get(stock_id)
-        session.close()
+        with self.Session() as session:
+            result = session.query(Stock).get(stock_id)
+        return result
+
+    def find_by_ticker(self, ticker: str) -> Optional[Stock]:
+        """
+        Returns a Stock based on ticker, or None if the stock does not exist.
+        """
+        with self.Session() as session:
+            result = session.query(Stock).filter(Stock.symbol == ticker).first()
         return result
 
     def find_all(self) -> List[Stock]:
         """
         Returns all Stock in the database in a list.
         """
-        session = self.Session()
-        result = session.query(Stock).all()
-        session.close()
+        with self.Session() as session:
+            result = session.query(Stock).all()
         return result
 
     def delete_by_id(self, stock_id: int) -> None:
@@ -59,3 +72,4 @@ class StockRepository:
         """
         with self.Session() as session:
             session.query(Stock).delete()
+            session.commit()
