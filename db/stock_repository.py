@@ -3,6 +3,8 @@ from typing import List, Optional
 from base_db import engine, Stock
 from sqlalchemy.orm import sessionmaker
 import logging
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import FlushError, ConcurrentModificationError
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,7 @@ class StockRepository:
             try:
                 session.add(new_stock)
                 session.commit()
-            except Exception:
+            except (SQLAlchemyError, FlushError, ConcurrentModificationError):
                 session.rollback()
                 raise
 

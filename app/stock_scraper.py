@@ -41,7 +41,7 @@ class StockScraper:
             stock_info = [info.strip() for info in stocks[i].split("|")]
 
             # only populate the stock table if it has not been added previously and it is not an etf
-            if self._stock_repository.find_by_ticker(stock_info[0]) is not None and stock_info[4] == "N":
+            if self._stock_repository.find_by_ticker(stock_info[0]) is None and stock_info[4] == "N":
                 if stock_info[2] == "A":
                     exchange = "NYSE MKT"
                 elif stock_info[2] == "N":
@@ -63,9 +63,10 @@ class StockScraper:
                                   name_variations=name_variations)
                 try:
                     self._stock_repository.input_stock(new_stock)
-                except Exception:
+                except Exception as err:
                     logger.exception(f"Stock table is not updated successfully. "
-                                     f"Stock: {stock_info[0]} is not added to database.")
+                                     f"Stock: {stock_info[0]} is not added to database. "
+                                     f"Error: {err}")
 
     def _form_name_variations(self, company_name: str) -> List:
         """
