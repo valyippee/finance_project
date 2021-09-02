@@ -38,7 +38,10 @@ CREATE TABLE mention (
     mention_id SERIAL PRIMARY KEY,
     stock_id INTEGER,
     dt TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    comment_or_submission_id TEXT NOT NULL,
+    comment_id TEXT,
+    submission_id TEXT,
+    from_comment BOOLEAN,
     CONSTRAINT fk_mention_stock FOREIGN KEY (stock_id) REFERENCES stock (id),
-    CONSTRAINT fk_mention_comment FOREIGN KEY (comment_id) REFERENCES comment (comment_id)
+    CONSTRAINT fk_mention_comment FOREIGN KEY (comment_id) REFERENCES comment (comment_id),
+    CONSTRAINT fk_mention_submission FOREIGN KEY (submission_id) REFERENCES submission (submission_id)
 );
