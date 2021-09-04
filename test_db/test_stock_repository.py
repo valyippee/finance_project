@@ -8,7 +8,7 @@ from test_db.base_test_db import Stock, engine
 
 def test_input_stock():
     stock_repository = StockRepository(engine)
-    sample_stock = Stock(symbol="234", name="sample2", exchange="NYSE")
+    sample_stock = Stock(symbol="XYZ", name="sample2", exchange="NYSE", name_variations=["XYZ", "xyz company"])
     stock_repository.input_stock(sample_stock)
 
 
@@ -46,4 +46,4 @@ def test_delete_all():
     assert stock_repository.find_all() is None
 
 
-test_find_by_ticker()
+test_input_stock()

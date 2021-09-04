@@ -58,6 +58,14 @@ class StockRepository:
             result = session.query(Stock).all()
         return result
 
+    def find_all_name_variations(self):
+        """
+        Returns all name_variations of all stocks in the database
+        """
+        with self.Session() as session:
+            result = session.query(Stock.name_variations).all()
+        return result
+
     def delete_by_id(self, stock_id: int) -> None:
         """
         Deletes a Stock based on id, if the Stock is in the database.
