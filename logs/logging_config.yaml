@@ -19,6 +19,9 @@ loggers:
   stock_scraper:
     handlers: [console, file]
     level: INFO
+  reddit_scraper:
+    handlers: [console, file]
+    level: INFO
   stock_repository:
     handlers: [console, file]
     level: INFO
