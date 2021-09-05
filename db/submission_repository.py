@@ -1,7 +1,6 @@
 from typing import Optional
-
 from base_db import engine, Submission
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import FlushError, ConcurrentModificationError
 import logging
@@ -17,14 +16,15 @@ class SubmissionRepository:
         """
         Initializes the SubmissionRepository with a default engine imported from base_db.
         """
-        self.Session = sessionmaker(init_engine)
+        self.engine = init_engine
 
     def find_by_id(self, id: int) -> Optional[Submission]:
         """
         Returns a Submission that matches id. If such submission does
         not exist, return None.
         """
-        pass
+        with Session(self.engine) as session:
+
 
     def input_submission(self, new_submission):
         """
