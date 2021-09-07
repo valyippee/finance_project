@@ -15,7 +15,7 @@ AutoBase = automap_base()
 AutoBase.prepare(engine, reflect=True)
 
 Stock = AutoBase.classes.stock
-StockPrice = AutoBase.classes.stock_price
+DailyStockPrice = AutoBase.classes.daily_stock_price
 Mention = AutoBase.classes.mention
 Comment = AutoBase.classes.comment
 Submission = AutoBase.classes.submission
