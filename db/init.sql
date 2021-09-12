@@ -6,7 +6,7 @@ CREATE TABLE stock (
     name_variations TEXT[] NOT NULL
 );
 
-CREATE TABLE stock_price (
+CREATE TABLE daily_stock_price (
     stock_id INTEGER NOT NULL,
     dt TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     open NUMERIC NOT NULL,

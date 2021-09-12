@@ -12,7 +12,9 @@ def test_input_submission():
     print(type(new_time))
     new_sub = Submission(submission_id="eitlom3",
                          dt=new_time,
-                         selftext="Hey everybody,\n\nI've recently started programming with Python and I",
+                         selftext="Hey everybody,\n\nI've "
+                                  "recently started programming "
+                                  "with Python and I",
                          title='Glad to have found this sub.')
     try:
         submission_repo.input_submission(new_sub)
@@ -21,4 +23,12 @@ def test_input_submission():
         print(error)
 
 
-test_input_submission()
+def test_find_by_id():
+    submission_repo = SubmissionRepository(engine)
+    submission = submission_repo.find_by_id("eitlom3")
+    print(submission.selftext)
+
+
+
+# test_input_submission()
+# test_find_by_id()
