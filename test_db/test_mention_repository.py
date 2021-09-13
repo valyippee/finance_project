@@ -44,8 +44,17 @@ def test_filter_by_stock_and_dt():
     print(len(mentions))
 
 
+def test_filter_by_stock_and_dt_none():
+    mention_table = MentionRepository(engine)
+    mentions = mention_table.filter_by_stock_and_dt(1, "2021-9-5 4:26:23",
+                                                    "2021-9-5 4:58:23")
+    print(mentions)
+    print(len(mentions))
+
+
 # test_input_mention_normal()
 # test_input_mention_none()
 # test_input_mention_many()
 # test_find_by_mention_id()
 # test_filter_by_stock_and_dt()
+# test_filter_by_stock_and_dt_none()

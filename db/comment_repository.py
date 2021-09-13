@@ -22,8 +22,8 @@ class CommentRepository:
         not exist, return None.
         """
         with Session(self.engine) as session:
-            result = session.query(Comment).filter_by(comment_id=_id).all()
-            return result[0]
+            result = session.query(Comment).filter_by(comment_id=_id).first()
+        return result
 
     def input_comment(self, new_comment: Comment):
         """

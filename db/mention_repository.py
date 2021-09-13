@@ -22,15 +22,15 @@ class MentionRepository:
         not exist, return None.
         """
         with Session(self.engine) as session:
-            result = session.query(Mention).filter_by(mention_id=_id).all()
-            return result[0]
+            result = session.query(Mention).filter_by(mention_id=_id).first()
+        return result
 
     def filter_by_stock_and_dt(self, _id: int,
                                start: str, end: str) -> Optional[List[Mention]]:
         """
         Returns a list of all mention_id of mentions mentioning the stock
         that matches _id in the time frame given by start and end
-        If the stock was never mentioned in the time frame, return None.
+        If the stock was never mentioned in the time frame, return empty list.
         Note: start and end are strings indicating timestamps and should be in
         the format of "%Y-%m-%d %H:%M:%S"
         """
