@@ -36,8 +36,6 @@ class RedditScraper:
     """
 
     def __init__(self, subreddit: str, init_engine=engine):
-        print(os.path.abspath(config.__file__))
-        print(config.client_id)
         try:
             self._reddit = praw.Reddit(
                 client_id=config.client_id,
@@ -61,9 +59,9 @@ class RedditScraper:
         self._praw_subreddit = self._reddit.subreddit(subreddit)
 
         self._stock_repository = StockRepository(init_engine)
-        # self._comment_repository = CommentRepository(init_engine)
+        self._comment_repository = CommentRepository(init_engine)
         self._submission_repository = SubmissionRepository(init_engine)
-        # self._mention_repository = MentionRepository(init_engine)
+        self._mention_repository = MentionRepository(init_engine)
 
     def scrape_submissions_between(self, start_date, end_date) -> None:
         """
@@ -77,70 +75,61 @@ class RedditScraper:
                                                    subreddit=self.subreddit)
         for submission in submissions:
             if self._submission_repository.find_by_id(submission.id) is None:
-                sub_datetime = datetime.fromtimestamp(submission.created_utc).strftime(datetime_fmt)
-                try:
-                    new_submission = Submission(submission_id=submission.id,
-                                                dt=sub_datetime,
-                                                selftext=submission.selftext,
-                                                title=submission.title)
-                    self._submission_repository.input_submission(new_submission)
-                except SQLAlchemyError as err:
-                    error = str(err.__dict__['orig'])
-                    logger.exception(f"Submission with id {submission.id} not successfully added to the database. "
-                                     f"Error: {error}")
-                else:
-                    self.count_mentions_and_populate_table(submission.title, sub_datetime, submission.id, False)
-                    self.count_mentions_and_populate_table(submission.selftext, sub_datetime, submission.id, False)
+                self._scrape_submission(submission)
+                self.count_mentions_and_populate_table(submission.title + submission.selftext,
+                                                       datetime.fromtimestamp(submission.created_utc).strftime(datetime_fmt),
+                                                       submission.id, False)
 
-    # def scrape_comments_between(self, start_date, end_date) -> None:
-    #     """
-    #     Get submissions after the given datetime and
-    #     input those submissions into the database.
-    #
-    #     Count mentions and update them into the database too.
-    #     """
-    #     comments = self._api.search_comments(after=start_date,
-    #                                          before=end_date,
-    #                                          subreddit=self.subreddit, limit=1)
-    #     for comment in comments:
-    #         if self._submission_repository.find_by_id(comment.link_id) is None:
-    #             self._scrape_submission_by_id(comment.link_id)
-    #         if self._comment_repository.find_by_id(comment.id) is None:
-    #             comment_datetime = datetime.fromtimestamp(comment.created_utc).strftime(datetime_fmt)
-    #             try:
-    #                 new_comment = Comment(comment_id=comment.id,
-    #                                       dt=comment_datetime,
-    #                                       body=comment.body,
-    #                                       score=comment.score,
-    #                                       submission_id=comment.link_id)
-    #                 self._comment_repository.input_comment(new_comment)
-    #             except SQLAlchemyError as err:
-    #                 error = str(err.__dict__['orig'])
-    #                 logger.exception(f"Comment with id {comment.id} not successfully added to the database. "
-    #                                  f"Error: {error}")
-    #             else:
-    #                 self.count_mentions_and_populate_table(comment.body, comment_datetime, comment.id, True)
-
-    def _scrape_submission_by_id(self, submission_id) -> None:
+    def scrape_comments_between(self, start_date, end_date) -> None:
         """
-        Get submission by id and input it into the database.
+        Get submissions after the given datetime and
+        input those submissions into the database.
 
-        Count mentions accordingly.
-
-        Note: this function should only be called if the comments were retrieved
-        before the submission is. The submission will then be retrieved before
-        inputting the comment into the table to maintain database integrity
-        (foreign keys constraints).
+        Count mentions and update them into the database too.
         """
-        submission = self._reddit.submission(id=submission_id)
+        comments = self._api.search_comments(after=start_date,
+                                             before=end_date,
+                                             subreddit=self.subreddit, limit=1)
+        for comment in comments:
+            if self._submission_repository.find_by_id(comment.link_id) is None:
+                submission = self._reddit.submission(id=comment.link_id)
+                self._scrape_submission(submission)
+            if self._comment_repository.find_by_id(comment.id) is None:
+                self._scrape_comment(comment)
+                self.count_mentions_and_populate_table(comment.body,
+                                                       datetime.fromtimestamp(comment.created_utc).strftime(datetime_fmt),
+                                                       comment.id,
+                                                       True)
+
+    def _scrape_submission(self, submission) -> None:
+        """
+        Input a submission (praw object) into the database.
+        """
         sub_datetime = datetime.fromtimestamp(submission.created_utc).strftime(datetime_fmt)
         try:
-            new_submission = Submission(submission_id=submission_id, dt=sub_datetime,
+            new_submission = Submission(submission_id=submission.id, dt=sub_datetime,
                                         selftext=submission.selftext, title=submission.title)
             self._submission_repository.input_submission(new_submission)
         except SQLAlchemyError as err:
             error = str(err.__dict__['orig'])
             logger.exception(f"Submission with id {submission.id} not successfully added to the database. "
+                             f"Error: {error}")
+
+    def _scrape_comment(self, comment) -> None:
+        """
+        Input a comment (praw object) into the database.
+        """
+        comment_datetime = datetime.fromtimestamp(comment.created_utc).strftime(datetime_fmt)
+        try:
+            new_comment = Comment(comment_id=comment.id,
+                                  dt=comment_datetime,
+                                  body=comment.body,
+                                  score=comment.score,
+                                  submission_id=comment.link_id)
+            self._comment_repository.input_comment(new_comment)
+        except SQLAlchemyError as err:
+            error = str(err.__dict__['orig'])
+            logger.exception(f"Comment with id {comment.id} not successfully added to the database. "
                              f"Error: {error}")
 
     def count_mentions_and_populate_table(self, text: str,
@@ -151,23 +140,54 @@ class RedditScraper:
         Note: Multiple mentions of the same company in the same text body is considered one mention.
         """
         all_name_variations = self._stock_repository.find_all_name_variations()
-        for name in all_name_variations:
-            print(name)
+        for name_variations, in all_name_variations:
+            for name in name_variations:
+                if name in text:
+                    stock_id = self._stock_repository.find_by_ticker(name_variations[0]).id
+                    if from_comment:
+                        comment_id, submission_id = link_id, None
+                    else:
+                        comment_id, submission_id = None, link_id
+                    try:
+                        new_mention = Mention(stock_id=stock_id, dt=dt,
+                                              comment_id=comment_id, submission_id=submission_id,
+                                              from_comment=from_comment)
+                        self._mention_repository.input_mention(new_mention)
+                    except SQLAlchemyError as err:
+                        error = str(err.__dict__['orig'])
+                        if from_comment:
+                            logger.exception(f"Mention with stock_id {stock_id}, comment_id {link_id}, "
+                                             f"and datetime {dt} not successfully added to the database. "
+                                             f"Error: {error}")
+                        else:
+                            logger.exception(
+                                f"Mention with stock_id {stock_id}, submission_id {link_id}, "
+                                f"and datetime {dt} not successfully added to the database. "
+                                f"Error: {error}")
+                    break
 
-
-    def get_live_comments(self):
+    def get_live_comments_and_submissions(self):
         """
         Retrieve all live comments from self.subreddit.
 
         If the submission that the comment belongs to has not been inputted into the database,
         retrieve that submission too.
         """
-        pass
+        logger.info("Reddit Scraper comments stream started at " + datetime.now().strftime(datetime_fmt))
+
+        for comment in self._praw_subreddit.stream.comments():
+            # scrape submission first, if it has not been scraped
+            if self._submission_repository.find_by_id(comment.link_id) is None:
+                submission = self._reddit.submission(id=comment.link_id)
+                self._scrape_submission(submission)
+            # scrape the comment
+            if self._comment_repository.find_by_id(comment.id) is None:
+                self._scrape_comment(comment)
+
+        logger.info("Reddit Scraper comments stream ended at " + datetime.now().strftime(datetime_fmt))
 
 
 if __name__ == "__main__":
-    scraper = RedditScraper("learnpython")
+    scraper = RedditScraper("wallstreetbets", engine)
     # start_date = int(datetime(2020, 1, 1).timestamp())
     # end_date = int(datetime(2020, 1, 2).timestamp())
-
-    # print(scraper.scrape_submissions_between(start_date, end_date))
